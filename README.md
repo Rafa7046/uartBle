@@ -1,6 +1,6 @@
 ### Como rodar
 
-`./centralAndPeripheral.sh` Para rodar a central e o dispositivo na rede BLE
+`./centralAndPeripheral.sh` Para rodar a central e o periférico
 
 `./peripheral-ble/peripheral.sh` Para rodar o periférico
 
