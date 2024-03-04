@@ -4,6 +4,10 @@
 static const struct bt_data adv_data[] = {
     BT_DATA_BYTES(BT_DATA_FLAGS, (BT_LE_AD_GENERAL | BT_LE_AD_NO_BREDR)),
 };
+
+#define UART_NOTIFY_UUID_VAL BT_UUID_128_ENCODE(0x12345678, 0x1234, 0x1234, 0x1234, 0x123456789abc)
+
+static struct bt_uuid_128 uuidUartNotify = BT_UUID_INIT_128(UART_NOTIFY_UUID_VAL);
 static struct bt_uuid_16 uuidUartUppercase = BT_UUID_INIT_16(0xAB01);
 static struct bt_uuid_16 uuidUartReceiveData = BT_UUID_INIT_16(0xAB02);
 static struct bt_uuid_16 uuidUartSendData = BT_UUID_INIT_16(0xAB03);
@@ -12,6 +16,8 @@ static struct bt_gatt_attr uart_gatt_attrs[] = {
     BT_GATT_CHARACTERISTIC(&uuidUartReceiveData.uuid, BT_GATT_CHRC_WRITE_WITHOUT_RESP, BT_GATT_PERM_WRITE, NULL, onReceiveData, NULL),
     BT_GATT_CHARACTERISTIC(&uuidUartSendData.uuid, BT_GATT_CHRC_READ, BT_GATT_PERM_WRITE, NULL, NULL, NULL),
     BT_GATT_CCC(NULL, BT_GATT_PERM_WRITE),
+    BT_GATT_CHARACTERISTIC(&uuidUartNotify.uuid, BT_GATT_CHRC_NOTIFY, BT_GATT_PERM_NONE, NULL, NULL, NULL),
+    BT_GATT_CCC(NULL, BT_GATT_PERM_READ | BT_GATT_PERM_WRITE),
 };
 
 static const int dataSizeAdvertising = ARRAY_SIZE(adv_data);
@@ -79,6 +85,13 @@ int peripheralStart(currentPeripheralState *state)
     return 0;
 }
 
+void sendNotification(struct bt_conn *conn, const uint8_t *data, uint16_t len) {
+    int err = bt_gatt_notify(conn, &uart_gatt_attrs[2], data, len);
+    if (err) {
+        printk("Notification failed: %d\n", err);
+    }
+}
+
 ssize_t onReceiveData(struct bt_conn *conn, const struct bt_gatt_attr *attr, const void *buf, uint16_t len, uint16_t offset, uint8_t flags)
 {
     int datalen = len >= MAX_BLE_MSG_SIZE ? (MAX_BLE_MSG_SIZE - 1) : len;
@@ -93,7 +106,10 @@ ssize_t onReceiveData(struct bt_conn *conn, const struct bt_gatt_attr *attr, con
 
     uppercase_data[datalen] = '\0';
 
-    printk("Message: [ %s ] (%u/%u bytes)\n", uppercase_data, datalen, len);
+    printk("Mensagem: %s (%u/%u bytes)\n", uppercase_data, datalen, len);
+
+    sendNotification(conn, uppercase_data, datalen);
+    printk("Notificação enviada\n");
 
     if (flags & BT_GATT_WRITE_FLAG_PREPARE)
         return BT_GATT_ERR(BT_ATT_ERR_SUCCESS);

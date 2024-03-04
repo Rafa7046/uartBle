@@ -132,7 +132,9 @@ int bleCentralStart(central_state_t *state)
 K_THREAD_DEFINE(transmitter_thread, 1024, initMessageSend, NULL, NULL, NULL, 1, 0, 0);
 
 static void initMessageSend()
-{
+{   
+
+    
     while (!atomic_get(&isWrite))
         k_sleep(K_MSEC(100));
 
@@ -140,7 +142,7 @@ static void initMessageSend()
 
     while (1)
     {
-        printk(">>> ");
+        printk("Escreva uma mensagem para enviar: ");
         char *line = console_getline();
 
         if (NULL == line)
@@ -163,11 +165,14 @@ static void sendMessage(char *message)
 }
 
 static uint8_t notifySubscribe(struct bt_conn *conn, struct bt_gatt_subscribe_params *params, const void *data, uint16_t length)
-{
-    short response_len = length >= MAX_BLE_MSG_SIZE ? (MAX_BLE_MSG_SIZE - 1) : length;
-    char response[MAX_BLE_MSG_SIZE];
-    memcpy(response, data, response_len);
-    response[response_len] = '\0';
+{   
+    if (length) {
+        short response_len = length >= MAX_BLE_MSG_SIZE ? (MAX_BLE_MSG_SIZE - 1) : length;
+        char response[MAX_BLE_MSG_SIZE];
+        memcpy(response, data, response_len);
+        response[response_len] = '\0';
+        printk("Notificação recebida: %s\n", response);
+    }
     return BT_GATT_ITER_CONTINUE;
 }
 

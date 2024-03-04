@@ -1,7 +1,7 @@
 #!/bin/bash
 
-CENTRAL_BIN="C:\Users\Rafae\Documents\PlatformIO\Projects\uartBle\central-ble\.pio\build\nrf52840_dk\firmware.elf"
-PERIPHERAL_BIN="C:\Users\Rafae\Documents\PlatformIO\Projects\uartBle\peripheral-ble\.pio\build\nrf52840_dk\firmware.elf"
+CENTRAL_BIN="C:\Users\rafin\Documents\GitHub\uartBle\central-ble\.pio\build\nrf52840_dk\firmware.elf"
+PERIPHERAL_BIN="C:\Users\rafin\Documents\GitHub\uartBle\peripheral-ble\.pio\build\nrf52840_dk\firmware.elf"
 
 renode -e \
     "using sysbus
